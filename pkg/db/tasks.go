@@ -1,8 +1,8 @@
 package db
 
 import (
-	"database/sql"
 	"errors"
+	"strconv"
 )
 
 type Task struct {
@@ -13,19 +13,30 @@ type Task struct {
 	Repeat  string `json:"repeat"`
 }
 
-var db *sql.DB
-
+// AddTask добавляет задачу в таблицу scheduler, используя глобальное
+// подключение DB, и возвращает идентификатор вставленной записи.
 func AddTask(task *Task) (int64, error) {
 	if task.Title == "" {
 		return 0, errors.New("не указан заголовок задачи")
 	}
 
-	query := `INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`
-	res, err := db.Exec(query, task.Date, task.Title, task.Comment, task.Repeat)
+	if DB == nil {
+		return 0, errors.New("database is not initialized")
+	}
+
+	res, err := DB.Exec(
+		`INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`,
+		task.Date, task.Title, task.Comment, task.Repeat,
+	)
 	if err != nil {
 		return 0, err
 	}
 
 	id, err := res.LastInsertId()
-	return id, err
+	if err != nil {
+		return 0, err
+	}
+
+	task.ID = strconv.FormatInt(id, 10)
+	return id, nil
 }
