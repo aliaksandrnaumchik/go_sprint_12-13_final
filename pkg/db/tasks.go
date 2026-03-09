@@ -1,42 +1,39 @@
 package db
 
 import (
-	"errors"
-	"strconv"
+	"fmt"
 )
 
-type Task struct {
-	ID      string `json:"id"`
-	Date    string `json:"date"`
-	Title   string `json:"title"`
-	Comment string `json:"comment"`
-	Repeat  string `json:"repeat"`
-}
+// Tasks возвращает список ближайших задач (не более limit записей), отсортированных по дате
+func Tasks(limit int) ([]*Task, error) {
+	query := `
+		SELECT id, date, title, comment, repeat
+		FROM scheduler
+		ORDER BY date ASC
+		LIMIT ?
+	`
 
-// AddTask добавляет задачу в таблицу scheduler, используя глобальное
-// подключение DB, и возвращает идентификатор вставленной записи.
-func AddTask(task *Task) (int64, error) {
-	if task.Title == "" {
-		return 0, errors.New("не указан заголовок задачи")
-	}
-
-	if DB == nil {
-		return 0, errors.New("database is not initialized")
-	}
-
-	res, err := DB.Exec(
-		`INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)`,
-		task.Date, task.Title, task.Comment, task.Repeat,
-	)
+	rows, err := DB.Query(query, limit)
 	if err != nil {
-		return 0, err
+		return nil, fmt.Errorf("ошибка выполнения запроса к БД: %w", err)
+	}
+	defer rows.Close()
+
+	var tasks []*Task
+
+	for rows.Next() {
+		var task Task
+		err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+		if err != nil {
+			return nil, fmt.Errorf("ошибка сканирования строки БД: %w", err)
+		}
+		tasks = append(tasks, &task)
 	}
 
-	id, err := res.LastInsertId()
-	if err != nil {
-		return 0, err
+	// Если задач нет, возвращаем пустой слайс вместо nil
+	if tasks == nil {
+		tasks = []*Task{}
 	}
 
-	task.ID = strconv.FormatInt(id, 10)
-	return id, nil
+	return tasks, nil
 }
