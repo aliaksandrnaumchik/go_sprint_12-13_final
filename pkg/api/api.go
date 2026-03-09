@@ -1,8 +1,6 @@
 package api
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 	"time"
 )
@@ -18,22 +16,25 @@ func nextDateHandler(w http.ResponseWriter, r *http.Request) {
 	dateStr := r.FormValue("date")
 	repeat := r.FormValue("repeat")
 
-	log.Printf("Received request: now=%s, date=%s, repeat=%s", nowStr, dateStr, repeat)
+	// Если now не указан, берём текущую дату
+	var now time.Time
+	var err error
+	if nowStr == "" {
+		now = time.Now()
+	} else {
+		now, err = time.Parse(dateFormat, nowStr)
+		if err != nil {
+			http.Error(w, "Некорректный формат параметра now", http.StatusBadRequest)
+			return
+		}
+	}
 
-	now, err := time.Parse(dateFormat, nowStr)
+	nextDate, err := NextDate(now, dateStr, repeat)
 	if err != nil {
-		http.Error(w, "Invalid now parameter", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	result, err := NextDate(now, dateStr, repeat)
-	if err != nil {
-		log.Printf("Error processing request: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "") // возвращаем пустую строку при ошибке
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, result)
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write([]byte(nextDate))
 }
