@@ -5,18 +5,15 @@ import (
 	"log"
 	"net/http"
 
+	"todo-scheduler/pkg/api"
 	"todo-scheduler/pkg/db"
 	"todo-scheduler/tests"
 )
 
 func main() {
-
 	initDb()
+	initApi()
 	initServer()
-}
-
-func getPort() int {
-	return tests.Port
 }
 
 func initDb() {
@@ -31,8 +28,12 @@ func initDb() {
 	}()
 }
 
+func initApi() {
+	api.Init()
+}
+
 func initServer() {
-	port := getPort()
+	port := tests.Port
 	webDir := "./web"
 
 	http.Handle("/", http.FileServer(http.Dir(webDir)))
