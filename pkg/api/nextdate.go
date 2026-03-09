@@ -10,19 +10,15 @@ import (
 const dateFormat = "20060102"
 
 func afterNow(date, now time.Time) bool {
-	// Сравниваем только даты, игнорируя время
 	dateOnly := date.Truncate(24 * time.Hour)
 	nowOnly := now.Truncate(24 * time.Hour)
 	return dateOnly.After(nowOnly) || dateOnly.Equal(nowOnly)
 }
 
-// lastDayOfMonth возвращает последний день месяца для указанной даты.
 func lastDayOfMonth(year int, month time.Month, loc *time.Location) int {
 	return time.Date(year, month+1, 0, 0, 0, 0, 0, loc).Day()
 }
 
-// addYearRule возвращает следующую годовую дату по правилам задачи.
-// Особый случай: 29 февраля -> 1 марта следующего года.
 func addYearRule(t time.Time) time.Time {
 	year, month, day := t.Date()
 	loc := t.Location()
@@ -34,9 +30,6 @@ func addYearRule(t time.Time) time.Time {
 	return t.AddDate(1, 0, 0)
 }
 
-// parseMonthDays разбирает список дней месяца.
-// Положительные числа: 1–31.
-// Отрицательные допустимы только -1 и -2 (последний и предпоследний дни месяца).
 func parseMonthDays(s string) ([]int, error) {
 	parts := strings.Split(s, ",")
 	result := make([]int, 0, len(parts))
@@ -60,7 +53,6 @@ func parseMonthDays(s string) ([]int, error) {
 	return result, nil
 }
 
-// parseMonths разбирает список месяцев (1–12). Пустой срез означает "все месяцы".
 func parseMonths(s string) (map[int]bool, error) {
 	if strings.TrimSpace(s) == "" {
 		return nil, nil
@@ -87,14 +79,11 @@ func parseMonths(s string) (map[int]bool, error) {
 	return result, nil
 }
 
-// nextMonthlyOccurrence возвращает следующую дату после prev,
-// удовлетворяющую месячному правилу.
 func nextMonthlyOccurrence(prev time.Time, days []int, months map[int]bool) time.Time {
 	loc := prev.Location()
 	year, month, day := prev.Date()
 
 	for {
-		// пропускаем месяцы, не входящие в список
 		if months != nil && !months[int(month)] {
 			month++
 			if month > 12 {
@@ -132,7 +121,6 @@ func nextMonthlyOccurrence(prev time.Time, days []int, months map[int]bool) time
 			return *candidate
 		}
 
-		// переходим к следующему месяцу
 		month++
 		if month > 12 {
 			month = 1
@@ -142,7 +130,6 @@ func nextMonthlyOccurrence(prev time.Time, days []int, months map[int]bool) time
 	}
 }
 
-// parseWeekdays разбирает список дней недели (1–7, понедельник-воскресенье).
 func parseWeekdays(s string) ([]int, error) {
 	parts := strings.Split(s, ",")
 	result := make([]int, 0, len(parts))
@@ -166,10 +153,7 @@ func parseWeekdays(s string) ([]int, error) {
 	return result, nil
 }
 
-// weekdayNumber возвращает номер дня недели в диапазоне 1–7 (понедельник-воскресенье).
 func weekdayNumber(t time.Time) int {
-	// time.Weekday: воскресенье=0 ... суббота=6.
-	// Преобразуем так, чтобы понедельник=1, ..., воскресенье=7.
 	return ((int(t.Weekday()) + 6) % 7) + 1
 }
 
@@ -261,8 +245,6 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 
 		date := start.AddDate(0, 0, 1)
 		for {
-			// Для правила недель повторение всегда ищем дату СТРОГО после now,
-			// даже если now сам попадает под правило.
 			if date.After(now) && weekSet[weekdayNumber(date)] {
 				return date.Format(dateFormat), nil
 			}

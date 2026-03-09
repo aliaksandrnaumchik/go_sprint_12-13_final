@@ -16,7 +16,6 @@ func nextDateHandler(w http.ResponseWriter, r *http.Request) {
 	dateStr := r.FormValue("date")
 	repeat := r.FormValue("repeat")
 
-	// Если now не указан, берём текущую дату
 	var now time.Time
 	var err error
 	if nowStr == "" {
@@ -31,7 +30,6 @@ func nextDateHandler(w http.ResponseWriter, r *http.Request) {
 
 	nextDate, err := NextDate(now, dateStr, repeat)
 	if err != nil {
-		// Для тестов, если ожидается пустая строка, возвращаем пустую строку без ошибки
 		w.Header().Set("Content-Type", "text/plain")
 		w.Write([]byte(""))
 		return
