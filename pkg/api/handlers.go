@@ -45,8 +45,18 @@ func nextDateHandler(w http.ResponseWriter, r *http.Request) {
 
 func taskHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
+	case http.MethodGet:
+		getTaskHandler(w, r)
+	case http.MethodPut:
+		updateTaskHandler(w, r)
 	case http.MethodPost:
-		addTaskHandler(w, r)
+		if r.URL.Path == "/api/task/done" {
+			doneTaskHandler(w, r)
+		} else {
+			addTaskHandler(w, r)
+		}
+	case http.MethodDelete:
+		deleteTaskHandler(w, r)
 	default:
 		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 	}
