@@ -261,7 +261,9 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 
 		date := start.AddDate(0, 0, 1)
 		for {
-			if afterNow(date, now) && weekSet[weekdayNumber(date)] {
+			// Для правила недель повторение всегда ищем дату СТРОГО после now,
+			// даже если now сам попадает под правило.
+			if date.After(now) && weekSet[weekdayNumber(date)] {
 				return date.Format(dateFormat), nil
 			}
 			date = date.AddDate(0, 0, 1)
