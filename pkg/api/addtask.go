@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 
 	"todo-scheduler/pkg/db"
 )
@@ -45,5 +46,5 @@ func addTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Возвращаем идентификатор созданной записи
-	writeJSON(w, map[string]string{"id": string(id)})
+	writeJSON(w, map[string]string{"id": strconv.FormatInt(id, 10)})
 }

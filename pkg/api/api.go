@@ -7,7 +7,7 @@ import (
 
 func Init() {
 	http.HandleFunc("/api/nextdate", nextDateHandler)
-	http.HandleFunc("/api/task", taskHandler) // новый обработчик
+	http.HandleFunc("/api/task", taskHandler)
 }
 
 func nextDateHandler(w http.ResponseWriter, r *http.Request) {
@@ -17,8 +17,11 @@ func nextDateHandler(w http.ResponseWriter, r *http.Request) {
 	dateStr := r.FormValue("date")
 	repeat := r.FormValue("repeat")
 
-	var now time.Time
-	var err error
+	var (
+		now time.Time
+		err error
+	)
+
 	if nowStr == "" {
 		now = time.Now()
 	} else {
@@ -31,11 +34,11 @@ func nextDateHandler(w http.ResponseWriter, r *http.Request) {
 
 	nextDate, err := NextDate(now, dateStr, repeat)
 	if err != nil {
-		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte(""))
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Write([]byte(nextDate))
 }

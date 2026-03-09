@@ -12,6 +12,12 @@ import (
 
 func main() {
 	initDb()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Printf("Ошибка при закрытии БД: %v", err)
+		}
+	}()
+
 	initApi()
 	initServer()
 }
@@ -21,11 +27,6 @@ func initDb() {
 	if err != nil {
 		log.Fatal("Ошибка инициализации БД:", err)
 	}
-	defer func() {
-		if closeErr := db.Close(); closeErr != nil {
-			log.Printf("Ошибка при закрытии БД: %v", closeErr)
-		}
-	}()
 }
 
 func initApi() {
