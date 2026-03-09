@@ -24,6 +24,7 @@ func initDb() {
 	if err != nil {
 		log.Fatal("Ошибка инициализации БД:", err)
 	}
+	defer db.Close()
 }
 
 func initServer() {
