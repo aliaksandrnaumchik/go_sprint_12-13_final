@@ -4,7 +4,6 @@ import (
 	"fmt"
 )
 
-// DeleteTask удаляет задачу по указанному ID
 func DeleteTask(id string) error {
 	query := `DELETE FROM scheduler WHERE id = ?`
 

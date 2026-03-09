@@ -13,8 +13,6 @@ type Task struct {
 	Repeat  string `json:"repeat"`
 }
 
-// AddTask добавляет задачу в таблицу scheduler, используя глобальное
-// подключение DB, и возвращает идентификатор вставленной записи.
 func AddTask(task *Task) (int64, error) {
 	if task.Title == "" {
 		return 0, errors.New("не указан заголовок задачи")

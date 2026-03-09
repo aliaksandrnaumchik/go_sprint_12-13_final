@@ -5,7 +5,6 @@ import (
 	"fmt"
 )
 
-// Tasks возвращает список ближайших задач (не более limit записей), отсортированных по дате
 func Tasks(limit int) ([]*Task, error) {
 	query := `
 		SELECT id, date, title, comment, repeat
@@ -31,7 +30,6 @@ func Tasks(limit int) ([]*Task, error) {
 		tasks = append(tasks, &task)
 	}
 
-	// Если задач нет, возвращаем пустой слайс вместо nil
 	if tasks == nil {
 		tasks = []*Task{}
 	}
@@ -39,7 +37,6 @@ func Tasks(limit int) ([]*Task, error) {
 	return tasks, nil
 }
 
-// GetTask возвращает задачу по указанному ID или ошибку, если задача не найдена
 func GetTask(id string) (*Task, error) {
 	query := `
 		SELECT id, date, title, comment, repeat
@@ -59,7 +56,6 @@ func GetTask(id string) (*Task, error) {
 	return &task, nil
 }
 
-// UpdateTask обновляет задачу в базе данных
 func UpdateTask(task *Task) error {
 	query := `
 		UPDATE scheduler
@@ -84,7 +80,6 @@ func UpdateTask(task *Task) error {
 	return nil
 }
 
-// UpdateDate обновляет только дату задачи
 func UpdateDate(next string, id string) error {
 	query := `UPDATE scheduler SET date = ? WHERE id = ?`
 
