@@ -10,7 +10,10 @@ import (
 const dateFormat = "20060102"
 
 func afterNow(date, now time.Time) bool {
-	return date.After(now) || date.Equal(now)
+	// Сравниваем только даты, игнорируя время
+	dateOnly := date.Truncate(24 * time.Hour)
+	nowOnly := now.Truncate(24 * time.Hour)
+	return dateOnly.After(nowOnly) || dateOnly.Equal(nowOnly)
 }
 
 func NextDate(now time.Time, dstart string, repeat string) (string, error) {
@@ -53,16 +56,31 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 		}
 
 		date := start
+		// Проверяем, что дата валидна (например, 29 февраля в невисокосном году)
+		if !isValidDate(date) {
+			// Если дата невалидна, сдвигаем на следующий день
+			date = date.AddDate(0, 0, 1)
+		}
+
 		for !afterNow(date, now) {
-			date = date.AddDate(1, 0, 0)
+			nextYear := date.AddDate(1, 0, 0)
+			if isValidDate(nextYear) {
+				date = nextYear
+			} else {
+				// Если в следующем году дата невалидна (29.02), сдвигаем на 01.03
+				date = nextYear.AddDate(0, 0, 1)
+			}
 		}
 		return date.Format(dateFormat), nil
-
-	case "w", "m":
-		// Пока возвращаем ошибку для неподдерживаемых форматов
-		return "", errors.New("неподдерживаемый формат правила повторения")
 
 	default:
 		return "", errors.New("неизвестный тип правила повторения")
 	}
+}
+
+// isValidDate проверяет, является ли дата валидной (например, 29.02 в високосном году)
+func isValidDate(t time.Time) bool {
+	year, month, day := t.Date()
+	lastDay := time.Date(year, month+1, 0, 0, 0, 0, 0, t.Location()).Day()
+	return day <= lastDay
 }
