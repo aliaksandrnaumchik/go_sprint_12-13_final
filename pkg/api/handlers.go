@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 	"time"
+
 	"todo-scheduler/pkg/db"
 )
 
@@ -58,25 +59,22 @@ func taskHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		deleteTaskHandler(w, r)
 	default:
-		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+		writeJSON(w, map[string]string{"error": "метод не поддерживается"})
 	}
 }
 
 func tasksHandler(w http.ResponseWriter, r *http.Request) {
-	// Проверяем, что метод запроса — GET
 	if r.Method != http.MethodGet {
 		writeJSON(w, map[string]string{"error": "метод не поддерживается"})
 		return
 	}
 
-	// Получаем список задач из БД (ограничение — 50 записей)
 	tasks, err := db.Tasks(50)
 	if err != nil {
 		writeJSON(w, map[string]string{"error": err.Error()})
 		return
 	}
 
-	// Формируем ответ в формате JSON
 	writeJSON(w, TasksResp{
 		Tasks: tasks,
 	})
