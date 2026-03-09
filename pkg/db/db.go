@@ -2,6 +2,8 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
+	"log"
 	"os"
 
 	_ "modernc.org/sqlite"
@@ -28,19 +30,22 @@ func Init(dbFile string) error {
 	var errOpen error
 	DB, errOpen = sql.Open("sqlite", dbFile)
 	if errOpen != nil {
-		return errOpen
+		return fmt.Errorf("ошибка открытия БД: %w", errOpen)
 	}
 
 	err = DB.Ping()
 	if err != nil {
-		return err
+		return fmt.Errorf("ошибка подключения к БД: %w", err)
 	}
 
 	if install {
 		_, err = DB.Exec(schema)
 		if err != nil {
-			return err
+			return fmt.Errorf("ошибка создания схемы БД: %w", err)
 		}
+		log.Println("База данных инициализирована, создана таблица scheduler")
+	} else {
+		log.Println("Подключено к существующей БД scheduler.db")
 	}
 
 	return nil

@@ -24,12 +24,15 @@ func initDb() {
 	if err != nil {
 		log.Fatal("Ошибка инициализации БД:", err)
 	}
-	defer db.Close()
+	defer func() {
+		if closeErr := db.Close(); closeErr != nil {
+			log.Printf("Ошибка при закрытии БД: %v", closeErr)
+		}
+	}()
 }
 
 func initServer() {
 	port := getPort()
-
 	webDir := "./web"
 
 	http.Handle("/", http.FileServer(http.Dir(webDir)))
