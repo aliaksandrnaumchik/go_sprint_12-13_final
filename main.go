@@ -4,11 +4,30 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"todo-scheduler/pkg/db"
 	"todo-scheduler/tests"
 )
 
 func main() {
-	port := tests.Port
+
+	initDb()
+	initServer()
+}
+
+func getPort() int {
+	return tests.Port
+}
+
+func initDb() {
+	err := db.Init("scheduler.db")
+	if err != nil {
+		log.Fatal("Ошибка инициализации БД:", err)
+	}
+}
+
+func initServer() {
+	port := getPort()
 
 	webDir := "./web"
 
