@@ -7,11 +7,19 @@ import (
 	"todo-scheduler/pkg/db"
 )
 
+const DefaultTaskLimit = 50
+
 type TasksResp struct {
 	Tasks []*db.Task `json:"tasks"`
 }
 
 func nextDateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		writeJSON(w, map[string]string{"error": "метод не поддерживается"})
+		return
+	}
+
 	r.ParseForm()
 
 	nowStr := r.FormValue("now")
@@ -41,7 +49,11 @@ func nextDateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.Write([]byte(nextDate))
+	_, writeErr := w.Write([]byte(nextDate))
+	if writeErr != nil {
+		http.Error(w, "Внутренняя ошибка сервера", http.StatusInternalServerError)
+		return
+	}
 }
 
 func taskHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,25 +63,23 @@ func taskHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPut:
 		updateTaskHandler(w, r)
 	case http.MethodPost:
-		if r.URL.Path == "/api/task/done" {
-			doneTaskHandler(w, r)
-		} else {
-			addTaskHandler(w, r)
-		}
+		addTaskHandler(w, r)
 	case http.MethodDelete:
 		deleteTaskHandler(w, r)
 	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		writeJSON(w, map[string]string{"error": "метод не поддерживается"})
 	}
 }
 
 func tasksHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		writeJSON(w, map[string]string{"error": "метод не поддерживается"})
 		return
 	}
 
-	tasks, err := db.Tasks(50)
+	tasks, err := db.Tasks(DefaultTaskLimit)
 	if err != nil {
 		writeJSON(w, map[string]string{"error": err.Error()})
 		return

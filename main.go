@@ -44,6 +44,6 @@ func initServer() {
 
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	if err != nil {
-		log.Fatal("Ошибка запуска сервера:", err)
+		panic(err)
 	}
 }

@@ -30,6 +30,10 @@ func Tasks(limit int) ([]*Task, error) {
 		tasks = append(tasks, &task)
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("ошибка при итерации по результатам запроса: %w", err)
+	}
+
 	if tasks == nil {
 		tasks = []*Task{}
 	}
