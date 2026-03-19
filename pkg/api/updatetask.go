@@ -11,33 +11,33 @@ import (
 func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		writeJSON(w, map[string]string{"error": "ошибка чтения тела запроса"})
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "ошибка чтения тела запроса"})
 		return
 	}
 
 	var task db.Task
 	err = json.Unmarshal(body, &task)
 	if err != nil {
-		writeJSON(w, map[string]string{"error": "ошибка десериализации JSON"})
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "ошибка десериализации JSON"})
 		return
 	}
 
 	if task.Title == "" {
-		writeJSON(w, map[string]string{"error": "не указан заголовок задачи"})
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "не указан заголовок задачи"})
 		return
 	}
 
 	err = checkDate(&task)
 	if err != nil {
-		writeJSON(w, map[string]string{"error": err.Error()})
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 
 	err = db.UpdateTask(&task)
 	if err != nil {
-		writeJSON(w, map[string]string{"error": err.Error()})
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
 	}
 
-	writeJSON(w, map[string]interface{}{})
+	writeJSON(w, http.StatusOK, map[string]interface{}{})
 }

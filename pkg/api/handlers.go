@@ -15,8 +15,7 @@ type TasksResp struct {
 
 func nextDateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		writeJSON(w, map[string]string{"error": "метод не поддерживается"})
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "метод не поддерживается"})
 		return
 	}
 
@@ -67,25 +66,21 @@ func taskHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		deleteTaskHandler(w, r)
 	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		writeJSON(w, map[string]string{"error": "метод не поддерживается"})
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "метод не поддерживается"})
 	}
 }
 
 func tasksHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		writeJSON(w, map[string]string{"error": "метод не поддерживается"})
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "метод не поддерживается"})
 		return
 	}
 
 	tasks, err := db.Tasks(DefaultTaskLimit)
 	if err != nil {
-		writeJSON(w, map[string]string{"error": err.Error()})
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
 	}
 
-	writeJSON(w, TasksResp{
-		Tasks: tasks,
-	})
+	writeJSON(w, http.StatusOK, TasksResp{Tasks: tasks})
 }
